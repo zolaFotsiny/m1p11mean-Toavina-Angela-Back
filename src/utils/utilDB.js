@@ -13,8 +13,11 @@ async function connect() {
 }
 
 function close() {
-    mongoose.disconnect();
-    console.log('Déconnecté de MongoDB');
+    const db = mongoose.connection;
+    db.on('error', console.error.bind(console, 'Erreur de connexion à MongoDB :'));
+    db.on('disconnected', () => {
+        console.log('Déconnecté de MongoDB');
+    });
 }
 
 module.exports = {
