@@ -5,7 +5,7 @@ const router = express.Router();
 
 const multer = require('./../utils/multerConfig');
 
-router.post('/', multer.single('image'), serviceController.create);
+router.post('/', multer.single('file'), serviceController.create);
 router.get('/', serviceController
 
 
