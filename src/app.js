@@ -9,7 +9,14 @@ const cors = require('cors');
 
 const app = express();
 
-app.use(cors()); // Enable CORS before any routes
+const corsOptions = {
+    origin: '*', // Mettez ici l'origine autorisée ou '*' pour autoriser toutes les origines
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use('/users', clientRoutes);
 app.use('/auth', authRoutes);
