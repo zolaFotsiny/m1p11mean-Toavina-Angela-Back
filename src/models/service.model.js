@@ -7,7 +7,7 @@ const serviceSchema = new mongoose.Schema({
     commission_pourcentage: Number,
     date_insertion: { type: Date, default: Date.now },
     etat: { type: Boolean, default: true },
-    imageName: String, // Field to store the image name
+    image: String, // Field to store the image name
 });
 
 module.exports = mongoose.model('Service', serviceSchema);

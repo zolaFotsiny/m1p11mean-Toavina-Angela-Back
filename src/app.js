@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const clientRoutes = require('./routes/users.route');
 const authRoutes = require('./routes/auth.route');
 const serviceRoutes = require('./routes/service.routes');
+const rendezvousRoutes = require('./routes/rendezvous.routes');
+
 const cors = require('cors');
 
 const app = express();
@@ -22,6 +24,8 @@ app.use('/users', clientRoutes);
 app.use('/auth', authRoutes);
 app.use('/services', serviceRoutes);
 app.use('/uploads', express.static('public/uploads'));
+app.use('/rendezvous', rendezvousRoutes);
+
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

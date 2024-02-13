@@ -6,7 +6,7 @@ const fs = require('fs').promises;
 
 async function create(req, res) {
     const { designation, prix, duree, commission_pourcentage } = req.body;
-    const file = req.file; //
+    const fileBuffer = req.file.buffer.toString('base64');
     try {
         // Vérifier le token et le rôle de l'utilisateur
         const decodedToken = tokenUtils.decodeToken(req.headers.token);
@@ -20,7 +20,7 @@ async function create(req, res) {
 
         // Read the image file as a Buffer
         // Check if the file was included in the request
-        if (!file) {
+        if (!fileBuffer) {
             return res.status(400).json({ message: "No file was uploaded." });
         }
 
@@ -31,7 +31,7 @@ async function create(req, res) {
             prix,
             duree,
             commission_pourcentage,
-            imageName: file.filename // Save the filename to the database
+            image: fileBuffer // Save the filename to the database
         });
 
         res.status(200).json({

@@ -6,22 +6,32 @@ const User = require('../models/users.model');
 const utilDB = require('../utils/utilDB');
 const tokenUtils = require('../utils/token');
 
+
+
 async function registerUser(req, res) {
     const { nom, prenom, email, mot_de_passe, type_utilisateur } = req.body;
 
     try {
-        await utilDB.connect();
+        await utilDB.connect().catch((error) => {
+            console.error("Database connection error", error);
+            return res.status(500).json({ message: 'Database connection error' });
+        });
 
-        // Check if the email is already registered
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'Email already registered' });
         }
 
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
+        const decodedToken = req.headers.token ? tokenUtils.decodeToken(req.headers.token) : null;
+        if (!decodedToken && req.headers.token) {
+            return res.status(401).json({ message: 'Invalid token' });
+        }
 
-        // Create the user
+        if ((type_utilisateur === 'employee' || type_utilisateur === 'manager') && decodedToken.type_utilisateur !== 'manager') {
+            return res.status(403).json({ message: 'Accès interdit. Seuls les managers peuvent créer les employees and managers.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
         const user = await User.create({
             nom,
             prenom,
@@ -30,23 +40,18 @@ async function registerUser(req, res) {
             type_utilisateur
         });
 
-        // Create the associated record based on user type
         switch (type_utilisateur) {
             case 'client':
                 await Client.create({ id_utilisateur: user._id });
                 break;
             case 'employee':
-                await Employee.create({ id_utilisateur: user._id });
-                break;
             case 'manager':
-                // You can add additional logic for manager registration if needed
-                await Manager.create({ id_utilisateur: user._id });
+                await Employee.create({ id_utilisateur: user._id });
                 break;
             default:
                 throw new Error('Invalid user type');
         }
 
-        // Generate JWT token for the registered user
         const token = tokenUtils.generateToken(user);
         res.status(200).json({
             message: `${type_utilisateur} registered successfully`,
@@ -61,6 +66,7 @@ async function registerUser(req, res) {
         utilDB.close();
     }
 }
+
 
 module.exports = {
     registerUser
