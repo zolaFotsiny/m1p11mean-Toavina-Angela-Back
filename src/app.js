@@ -6,6 +6,7 @@ const clientRoutes = require('./routes/users.route');
 const authRoutes = require('./routes/auth.route');
 const serviceRoutes = require('./routes/service.routes');
 const rendezvousRoutes = require('./routes/rendezvous.routes');
+const employeeRoutes = require('./routes/employee.routes');
 
 const cors = require('cors');
 
@@ -23,8 +24,9 @@ app.use(bodyParser.json());
 app.use('/users', clientRoutes);
 app.use('/auth', authRoutes);
 app.use('/services', serviceRoutes);
-app.use('/uploads', express.static('public/uploads'));
+app.use(express.static('affichage'));
 app.use('/rendezvous', rendezvousRoutes);
+app.use('/employees', employeeRoutes);
 
 
 const port = process.env.PORT || 3000;
