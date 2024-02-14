@@ -7,8 +7,14 @@ async function findAll(req, res) {
     try {
         await utilDB.connect();
 
-        // Récupérer tous les services
-        const clients = await clientModel.find({});
+        const clients = await clientModel.find({}).populate({
+            path: 'id_utilisateur', // Correct the path to match the schema
+            populate: {
+                path: 'employee.id_utilisateur',
+                model: 'User'
+            }
+        });
+
 
         res.status(200).json({
             message: 'Client récupérés avec succès',
