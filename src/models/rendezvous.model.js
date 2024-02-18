@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 const rendezvousSchema = new mongoose.Schema({
     id_client: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
     id_service: { type: mongoose.Schema.Types.ObjectId, ref: 'Service' },
-    id_employee: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee' },
+    id_employee: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', default: null },
     date_heure: Date,
-    etat: String,
+    etat: { type: Number, default: 1 },
 
     // autres champs
 });

@@ -6,7 +6,7 @@ const serviceSchema = new mongoose.Schema({
     duree: Number,
     commission_pourcentage: Number,
     date_insertion: { type: Date, default: Date.now },
-    etat: { type: Boolean, default: true },
+    etat: { type: Number, default: 1 },
     image: String, // Field to store the image name
 });
 

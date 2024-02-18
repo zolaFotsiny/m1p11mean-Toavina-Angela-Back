@@ -20,7 +20,15 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json());
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        return res.status(400).send({ error: 'Invalid JSON format' });
+    }
+    next();
+});
 app.use('/users', clientRoutes);
 app.use('/auth', authRoutes);
 app.use('/services', serviceRoutes);
