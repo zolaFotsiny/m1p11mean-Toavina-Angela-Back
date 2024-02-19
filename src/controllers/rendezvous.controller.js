@@ -19,14 +19,13 @@ async function addRendezvous(req, res) {
         // Extracting id_client from the decoded token
         const id_client = decodedToken.id;
 
-        const { id_service, id_employee, date_heure } = req.body;
+        const { choix, date_heure } = req.body;
 
 
 
         const rendezvous = await Rendezvous.create({
             id_client,
-            id_employee,
-            id_service,
+            choix,
             date_heure,
         });
         const subject = 'Rappel de rendez-vous';
