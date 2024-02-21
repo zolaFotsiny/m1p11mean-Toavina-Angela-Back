@@ -2,11 +2,9 @@ const mongoose = require('mongoose');
 
 const rendezvousSchema = new mongoose.Schema({
     id_client: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
-    choix: [{
-        id_service: { type: mongoose.Schema.Types.ObjectId, ref: 'Service' },
-        id_employee: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', default: null },
-    }],
-    date_heure: Date,
+    taches: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tache' }],
+    date_heure: Date,  // champ renommé
+    remarque: String,
     etat: { type: Number, default: 1 },
 
     // autres champs

@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth.route');
 const serviceRoutes = require('./routes/service.routes');
 const rendezvousRoutes = require('./routes/rendezvous.routes');
 const employeeRoutes = require('./routes/employee.routes');
+const tacheRoutes = require('./routes/tache.routes');
 
 const cors = require('cors');
 
@@ -35,6 +36,7 @@ app.use('/services', serviceRoutes);
 app.use(express.static('affichage'));
 app.use('/rendezvous', rendezvousRoutes);
 app.use('/employees', employeeRoutes);
+app.use('/taches', tacheRoutes);
 
 
 const port = process.env.PORT || 3000;
