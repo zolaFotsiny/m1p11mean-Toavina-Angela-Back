@@ -71,16 +71,13 @@ async function findAll(req, res) {
             const id_client = decodedToken.id;
             const rendezvousByClient = await Rendezvous.find({ id_client })
                 .populate({
-                    path: 'id_client',
-                    model: 'Client',
-                })
-                .populate({
                     path: 'taches',
                     model: 'Tache',
                     populate: [
                         {
                             path: 'id_service',
-                            model: 'Service'
+                            model: 'Service',
+                            select: '-image'
 
                         },
                         {
@@ -89,6 +86,7 @@ async function findAll(req, res) {
                             populate: {
                                 path: 'id_utilisateur',
                                 model: 'User',
+                                select: '-mot_de_passe'
                             }
 
                         }
@@ -99,16 +97,13 @@ async function findAll(req, res) {
             // If the user is a manager, return all rendezvous
             const allRendezvous = await Rendezvous.find()
                 .populate({
-                    path: 'id_client',
-                    model: 'Client',
-                })
-                .populate({
                     path: 'taches',
                     model: 'Tache',
                     populate: [
                         {
                             path: 'id_service',
-                            model: 'Service'
+                            model: 'Service',
+                            select: '-image'
 
                         },
                         {
@@ -117,6 +112,7 @@ async function findAll(req, res) {
                             populate: {
                                 path: 'id_utilisateur',
                                 model: 'User',
+                                select: '-mot_de_passe'
                             }
 
                         }
