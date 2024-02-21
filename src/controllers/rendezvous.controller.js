@@ -69,11 +69,59 @@ async function findAll(req, res) {
         if (userType === 'client') {
             // If the user is a client, return the rendezvous where the client is involved
             const id_client = decodedToken.id;
-            const rendezvousByClient = await Rendezvous.find({ id_client }).populate('taches');
+            const rendezvousByClient = await Rendezvous.find({ id_client })
+                .populate({
+                    path: 'id_client',
+                    model: 'Client',
+                })
+                .populate({
+                    path: 'taches',
+                    model: 'Tache',
+                    populate: [
+                        {
+                            path: 'id_service',
+                            model: 'Service'
+
+                        },
+                        {
+                            path: 'id_employee',
+                            model: 'Employee',
+                            populate: {
+                                path: 'id_utilisateur',
+                                model: 'User',
+                            }
+
+                        }
+                    ]
+                });
             res.status(200).json(rendezvousByClient);
         } else {
             // If the user is a manager, return all rendezvous
-            const allRendezvous = await Rendezvous.find().populate('taches');
+            const allRendezvous = await Rendezvous.find()
+                .populate({
+                    path: 'id_client',
+                    model: 'Client',
+                })
+                .populate({
+                    path: 'taches',
+                    model: 'Tache',
+                    populate: [
+                        {
+                            path: 'id_service',
+                            model: 'Service'
+
+                        },
+                        {
+                            path: 'id_employee',
+                            model: 'Employee',
+                            populate: {
+                                path: 'id_utilisateur',
+                                model: 'User',
+                            }
+
+                        }
+                    ]
+                });
             res.status(200).json(allRendezvous);
         }
 
