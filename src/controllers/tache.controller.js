@@ -80,7 +80,38 @@ async function getDailyTasksAndCommission(req, res) {
     }
 }
 
+async function validateTask(req, res) {
+    try {
+        await utilDB.connect();
+        // Verify the token and get the user type
+        const decodedToken = tokenUtils.decodeToken(req.headers.token);
+        const userType = decodedToken.type_utilisateur;
+
+        if (userType !== 'manager' && userType !== 'employee') {
+            return res.status(403).json({ message: 'Accès interdit. Seuls les managers et les employés peuvent valider une tâche.' });
+        }
+
+        const id_tache = req.params.id; // assuming the id of the task is passed as a URL parameter
+        const tache = await Tache.findById(id_tache);
+
+        if (!tache) {
+            return res.status(404).json({ message: 'Tâche non trouvée.' });
+        }
+
+        tache.etat = 11; // update the state
+        tache.date_fait = new Date(); // update the date_fait field to the current date and time
+        await tache.save();
+
+        utilDB.close();
+        res.status(200).json({ message: 'Tâche validée avec succès.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erreur lors de la validation de la tâche' });
+    }
+}
+
 module.exports = {
     findAll,
-    getDailyTasksAndCommission  // added findAll
+    getDailyTasksAndCommission,
+    validateTask  // added validateTask
 };
