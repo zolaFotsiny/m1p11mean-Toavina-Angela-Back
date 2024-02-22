@@ -1,6 +1,8 @@
 const Tache = require('../models/tache.model');
+const Commission = require('../models/comission.model');
 const tokenUtils = require('../utils/token');
 const utilDB = require('../utils/utilDB');
+const Service = require('../models/service.model');
 const mongoose = require('mongoose');
 
 async function findAll(req, res) {
@@ -38,47 +40,6 @@ async function findAll(req, res) {
 
 
 
-async function getDailyTasksAndCommission(req, res) {
-    try {
-        await utilDB.connect();
-        // Verify the token and get the user type
-        const decodedToken = tokenUtils.decodeToken(req.headers.token);
-        const userType = decodedToken.type_utilisateur;
-
-        if (userType !== 'employee') {
-            return res.status(403).json({ message: 'Accès interdit. Seuls les employés peuvent accéder à cette fonction.' });
-        }
-
-        const id_employee = decodedToken.id;
-
-        // Get today's date
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        // Find tasks for the day
-        const tasks = await Tache.find({
-            id_emp: id_employee,
-            date_debut: { $gte: today, $lt: tomorrow }
-        }).populate('id_service');
-
-        // Calculate commission
-        let totalCommission = 0;
-        tasks.forEach(task => {
-            const commissionPourcentage = task.id_service.commission_pourcentage;
-            const prix = task.id_service.prix;
-            const commission = (commissionPourcentage / 100) * prix;
-            totalCommission += commission;
-        });
-
-        utilDB.close();
-        res.status(200).json({ tasks, totalCommission });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Erreur lors de la récupération des tâches et de la commission' });
-    }
-}
 
 async function validateTask(req, res) {
     try {
@@ -102,8 +63,28 @@ async function validateTask(req, res) {
         tache.date_fait = new Date(); // update the date_fait field to the current date and time
         await tache.save();
 
+        // Find the service related to the task
+        const service = await Service.findById(tache.id_service);
+        if (!service) {
+            return res.status(404).json({ message: 'Service non trouvé.' });
+        }
+
+        // Calculate the commission amount
+        const montant = service.prix * (service.commission_pourcentage / 100);
+
+        // Create a new commission
+        const commission = new Commission({
+            id_employee: tache.id_employee,
+            id_tache: tache._id,
+            id_servie: service._id,
+            montant: montant,
+            date: tache.date_fait,
+            etat: 1
+        });
+        await commission.save();
+
         utilDB.close();
-        res.status(200).json({ message: 'Tâche validée avec succès.' });
+        res.status(200).json({ message: 'Tâche validée avec succès. Commission ajoutée.' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Erreur lors de la validation de la tâche' });
@@ -112,6 +93,5 @@ async function validateTask(req, res) {
 
 module.exports = {
     findAll,
-    getDailyTasksAndCommission,
     validateTask  // added validateTask
 };
