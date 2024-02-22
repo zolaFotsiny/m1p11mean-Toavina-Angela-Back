@@ -9,6 +9,8 @@ const mongoose = require('mongoose');
 
 async function addRendezvous(req, res) {
     try {
+
+        // console.log('_________',req);
         await utilDB.connect();
         // Verify the token and allow only "client" role
         const decodedToken = tokenUtils.decodeToken(req.headers.token);
@@ -44,6 +46,17 @@ async function addRendezvous(req, res) {
 
         await rendezvous.save();
 
+        if (req.io) {
+            req.io.emit('rdv', { message: 'rdv has registered!' });
+            console.log('success');
+        }
+        else{
+            console.log('err io');
+        }
+        // const io = req.io;
+        // io.emit('rdv', { message: 'rdv has registered!' });
+        
+        
         const subject = 'Rappel de rendez-vous';
         const text = `<p class="reminder-text">Ceci est un rappel de votre rendez-vous prévu pour <strong>${date_heure}</strong>.</p>`;
         const mailUtilsInstance = new MailUtils();

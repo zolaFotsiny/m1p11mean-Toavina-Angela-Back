@@ -8,6 +8,14 @@ const tokenUtils = require('../utils/token');
 
 
 
+
+async function test(req, res,io) {
+    // do something with io here
+    io.emit('userRegistered', { message: 'A new user has registered!' });
+
+    res.status(200).json({ success: true, message: 'User registered successfully' });
+}
+
 async function registerUser(req, res) {
     const { nom, prenom, email, mot_de_passe, type_utilisateur } = req.body;
 
@@ -69,5 +77,6 @@ async function registerUser(req, res) {
 
 
 module.exports = {
-    registerUser
+    registerUser,
+    test
 };
