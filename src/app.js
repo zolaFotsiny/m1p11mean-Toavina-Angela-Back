@@ -8,10 +8,7 @@ const serviceRoutes = require('./routes/service.routes');
 const rendezvousRoutes = require('./routes/rendezvous.routes');
 const employeeRoutes = require('./routes/employee.routes');
 const tacheRoutes = require('./routes/tache.routes');
-<<<<<<< Updated upstream
 const comisionRoutes = require('./routes/comission.routes');
-=======
->>>>>>> Stashed changes
 const cors = require('cors');
 const initializeSocket = require('./utils/socket'); // Import the socket initialization function
 
