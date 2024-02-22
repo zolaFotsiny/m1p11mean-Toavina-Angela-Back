@@ -1,7 +1,7 @@
-require('dotenv').config();
-
+// main file
 const express = require('express');
 const bodyParser = require('body-parser');
+const http = require('http');
 const clientRoutes = require('./routes/users.route');
 const authRoutes = require('./routes/auth.route');
 const serviceRoutes = require('./routes/service.routes');
@@ -10,17 +10,12 @@ const employeeRoutes = require('./routes/employee.routes');
 const tacheRoutes = require('./routes/tache.routes');
 const comisionRoutes = require('./routes/comission.routes');
 const cors = require('cors');
+const initializeSocket = require('./utils/socket'); // Import the socket initialization function
 
 const app = express();
+const server = http.createServer(app);
 
-const corsOptions = {
-    origin: '*', // Mettez ici l'origine autorisée ou '*' pour autoriser toutes les origines
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-    optionsSuccessStatus: 204,
-};
-
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.json());
@@ -30,6 +25,17 @@ app.use((err, req, res, next) => {
     }
     next();
 });
+
+// Initialize socket.io
+const io = initializeSocket(server);
+// Inject io into routes
+// app.use((req, res, next) => {
+//     req.io = io;
+//     next();
+// });
+
+app.set('io', io);
+
 app.use('/users', clientRoutes);
 app.use('/auth', authRoutes);
 app.use('/services', serviceRoutes);
@@ -40,7 +46,8 @@ app.use('/taches', tacheRoutes);
 app.use('/comission', comisionRoutes);
 
 
+
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log(`Serveur démarré sur le port ${port}`);
+server.listen(port, () => {
+    console.log(`Serveur démarré sur le port: http://localhost:${port}`);
 });
