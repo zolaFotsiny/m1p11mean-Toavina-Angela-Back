@@ -9,6 +9,7 @@ const rendezvousRoutes = require('./routes/rendezvous.routes');
 const employeeRoutes = require('./routes/employee.routes');
 const tacheRoutes = require('./routes/tache.routes');
 const comisionRoutes = require('./routes/comission.routes');
+const dashRoutes = require('./routes/dash.routes');
 const cors = require('cors');
 const initializeSocket = require('./utils/socket'); // Import the socket initialization function
 
@@ -44,6 +45,7 @@ app.use('/rendezvous', rendezvousRoutes);
 app.use('/employees', employeeRoutes);
 app.use('/taches', tacheRoutes);
 app.use('/comission', comisionRoutes);
+app.use('/dash', dashRoutes);
 
 
 
