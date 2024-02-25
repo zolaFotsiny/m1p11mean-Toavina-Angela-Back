@@ -15,4 +15,11 @@ router.post('/add', rendezvousController.addRendezvous);
 // Route pour récupérer les rendez-vous d'un client spécifique
 router.get('/', rendezvousController.findAll);
 
+
+
+// Route pour récupérer un rendez-vous par son id
+router.get('/:id', rendezvousController.findById);
+
+
+
 module.exports = router;

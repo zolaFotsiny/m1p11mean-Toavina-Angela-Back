@@ -1,5 +1,6 @@
 const Rendezvous = require('../models/rendezvous.model');
 const Tache = require('../models/tache.model');
+const Client = require('../models/client.model');
 const MailUtils = require('../utils/mailUtils');
 
 const tokenUtils = require('../utils/token');
@@ -19,9 +20,17 @@ async function addRendezvous(req, res) {
             return res.status(403).json({ message: 'Accès interdit. Seuls les clients peuvent ajouter un rendez-vous.' });
         }
 
-        // Extracting id_client from the decoded token
-        const id_client = decodedToken.id;
+        const id_utilisateur = decodedToken.id;
 
+        // Find the client with the decoded id
+        const client = await Client.findOne({ id_utilisateur: id_utilisateur });
+
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+
+        // Now you can use client._id
+        const id_client = client._id;
         const { choix, date_heure, remarque } = req.body;  // added remarque
 
         // Create rendezvous without tasks
@@ -50,13 +59,13 @@ async function addRendezvous(req, res) {
             req.io.emit('rdv', { message: 'rdv has registered!' });
             console.log('success');
         }
-        else{
+        else {
             console.log('err io');
         }
         // const io = req.io;
         // io.emit('rdv', { message: 'rdv has registered!' });
-        
-        
+
+
         const subject = 'Rappel de rendez-vous';
         const text = `<p class="reminder-text">Ceci est un rappel de votre rendez-vous prévu pour <strong>${date_heure}</strong>.</p>`;
         const mailUtilsInstance = new MailUtils();
@@ -81,7 +90,17 @@ async function findAll(req, res) {
 
         if (userType === 'client') {
             // If the user is a client, return the rendezvous where the client is involved
-            const id_client = decodedToken.id;
+            const id_utilisateur = decodedToken.id;
+
+            // Find the client with the decoded id
+            const client = await Client.findOne({ id_utilisateur: id_utilisateur });
+
+            if (!client) {
+                return res.status(404).json({ message: 'Client not found' });
+            }
+
+            // Now you can use client._id
+            const id_client = client._id;
             const rendezvousByClient = await Rendezvous.find({ id_client })
                 .populate({
                     path: 'taches',
@@ -105,7 +124,12 @@ async function findAll(req, res) {
                         }
                     ]
                 });
-            res.status(200).json(rendezvousByClient);
+
+            res.status(200).json({
+                message: 'rdv succès',
+                data: rendezvousByClient,
+
+            });
         } else {
             // If the user is a manager, return all rendezvous
             const allRendezvous = await Rendezvous.find()
@@ -131,7 +155,14 @@ async function findAll(req, res) {
                         }
                     ]
                 });
-            res.status(200).json(allRendezvous);
+
+
+
+            res.status(200).json({
+                message: 'rdv succès',
+                data: allRendezvous,
+
+            });
         }
 
         utilDB.close();
@@ -140,9 +171,53 @@ async function findAll(req, res) {
         res.status(500).json({ error: 'Erreur lors de la récupération des rendez-vous' });
     }
 }
+async function findById(req, res) {
+    try {
+        await utilDB.connect();
+        const id = req.params.id;
+
+        // Find the rendezvous with the provided id
+        const rendezvous = await Rendezvous.findById(id)
+            .populate({
+                path: 'taches',
+                model: 'Tache',
+                populate: [
+                    {
+                        path: 'id_service',
+                        model: 'Service',
+                        select: '-image'
+                    },
+                    {
+                        path: 'id_employee',
+                        model: 'Employee',
+                        populate: {
+                            path: 'id_utilisateur',
+                            model: 'User',
+                            select: '-mot_de_passe'
+                        }
+                    }
+                ]
+            });
+
+        if (!rendezvous) {
+            return res.status(404).json({ message: 'Rendezvous not found' });
+        }
+
+        res.status(200).json({
+            message: 'Rendezvous found',
+            data: rendezvous,
+        });
+
+        utilDB.close();
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error while retrieving the rendezvous' });
+    }
+}
 
 
 module.exports = {
     addRendezvous,
-    findAll
+    findAll,
+    findById
 };
