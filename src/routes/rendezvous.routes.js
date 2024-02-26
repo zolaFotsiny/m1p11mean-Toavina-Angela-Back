@@ -19,7 +19,8 @@ router.get('/', rendezvousController.findAll);
 
 // Route pour récupérer un rendez-vous par son id
 router.get('/:id', rendezvousController.findById);
+router.get('/stat/getRdvCountPerDay', rendezvousController.getRdvCountPerDay);
 
-
+router.post('/payer/:id', rendezvousController.payer);
 
 module.exports = router;
