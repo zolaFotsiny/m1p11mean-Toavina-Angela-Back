@@ -2,7 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const http = require('http');
-const clientRoutes = require('./routes/users.route');
+const userRoutes = require('./routes/users.route');
 const authRoutes = require('./routes/auth.route');
 const serviceRoutes = require('./routes/service.routes');
 const rendezvousRoutes = require('./routes/rendezvous.routes');
@@ -11,6 +11,7 @@ const tacheRoutes = require('./routes/tache.routes');
 const comisionRoutes = require('./routes/comission.routes');
 const dashRoutes = require('./routes/dash.routes');
 const paiementRoutes = require('./routes/paiement.routes');
+const clientRoutes = require('./routes/client.routes');
 const cors = require('cors');
 const initializeSocket = require('./utils/socket'); // Import the socket initialization function
 
@@ -38,7 +39,7 @@ const io = initializeSocket(server);
 
 app.set('io', io);
 
-app.use('/users', clientRoutes);
+app.use('/users', userRoutes);
 app.use('/auth', authRoutes);
 app.use('/services', serviceRoutes);
 app.use(express.static('affichage'));
@@ -48,6 +49,7 @@ app.use('/taches', tacheRoutes);
 app.use('/comission', comisionRoutes);
 app.use('/dash', dashRoutes);
 app.use('/paiement', paiementRoutes);
+app.use('/client', clientRoutes);
 
 
 
