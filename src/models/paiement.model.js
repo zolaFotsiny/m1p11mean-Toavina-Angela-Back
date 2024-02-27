@@ -7,6 +7,6 @@ const paiementSchema = new mongoose.Schema({
     date_paiement: { type: Date, default: Date.now },
     mode_paiement: String, // Par exemple, 'Carte de crédit', 'Espèces', etc.
     etat: { type: Number, default: 1 },
+    details: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PaiementDetails' }],
 });
-
 module.exports = mongoose.model('Paiement', paiementSchema);

@@ -218,10 +218,6 @@ async function findById(req, res) {
     }
 }
 
-
-
-
-
 async function payer(req, res) {
     try {
         await utilDB.connect();
@@ -234,6 +230,21 @@ async function payer(req, res) {
 
         if (!rendezvous) {
             return res.status(404).json({ message: 'Rendez-vous non trouvé' });
+        }
+
+        // Vérifier si le rendez-vous a déjà été payé
+        if (rendezvous.etat === 51) {
+            const paiementExist = await Paiement.findOne({ id_rendezvous: rendezvous._id }).populate({
+                path: 'details',
+                populate: {
+                    path: 'id_service',
+                    model: 'Service',
+                    select: '-image'
+                }
+            });
+            if (paiementExist) {
+                return res.status(200).json({ message: 'Paiement déjà effectué', paiement: paiementExist });
+            }
         }
 
         // Calculer le montant total du paiement
@@ -255,22 +266,41 @@ async function payer(req, res) {
         // Créer les détails du paiement pour chaque tâche
         for (let tache of rendezvous.taches) {
             const service = await Service.findById(tache.id_service);
-            await PaiementDetails.create({
+            const paiementDetails = await PaiementDetails.create({
                 id_paiement: paiement._id,
                 id_tache: tache._id,
                 id_service: service._id,
                 montant: service.prix,
                 etat: 1,
             });
+            paiement.details.push(paiementDetails);
         }
 
+        await paiement.save();
+
+        // Mettre à jour l'état du rendez-vous
+        rendezvous.etat = 51;
+        await rendezvous.save();
+
+        const paiementPopulated = await Paiement.findById(paiement._id).populate({
+            path: 'details',
+            populate: {
+                path: 'id_service',
+                model: 'Service',
+                select: '-image'
+            }
+        });
+
         utilDB.close();
-        res.status(201).json({ message: 'Paiement effectué avec succès' });
+        res.status(201).json({ message: 'Paiement effectué avec succès', paiement: paiementPopulated });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Erreur lors du paiement' });
     }
 }
+
+
+
 
 const getRdvCountPerDay = async (req, res) => {
     try {
