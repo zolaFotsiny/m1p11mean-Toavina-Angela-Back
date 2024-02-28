@@ -13,7 +13,6 @@ const mongoose = require('mongoose');
 
 async function addRendezvous(req, res) {
     try {
-
         // console.log('_________',req);
         await utilDB.connect();
         // Verify the token and allow only "client" role
@@ -45,16 +44,38 @@ async function addRendezvous(req, res) {
         });
 
         // Create tasks and add them to the rendezvous
-        const taches = await Promise.all(choix.map(async ({ id_service, id_employee }) => {
+        let previousTaskEndTime = new Date(date_heure);
+        for (let i = 0; i < choix.length; i++) {
+            const { id_service, id_employee } = choix[i];
+            // Get the service to find its duration
+            const service = await Service.findById(id_service);
+            if (!service) {
+                throw new Error('Service not found');
+            }
+
+            // Calculate the start date of the task
+            let date_debut;
+            if (i === 0) {
+                // If it's the first task, it starts at the same time as the rendezvous
+                date_debut = new Date(date_heure);
+            } else {
+                // If it's not the first task, it starts after the previous task, which is the duration of the previous service
+                date_debut = previousTaskEndTime;
+            }
+
+            // Update the end time of the previous task
+            previousTaskEndTime = new Date(date_debut.getTime() + service.duree * 60 * 1000);  // assuming duree is in minutes
+
             const tache = await Tache.create({
                 id_employee,
                 id_service,
-                id_rendezvous: rendezvous._id,  // added id_rendezvous
-                date_debut: date_heure,
+                id_rendezvous: rendezvous._id,
+                date_debut,
+                remarque_tache: 'Tache pour plus ' + date_debut,  // new field
                 // other fields...
             });
             rendezvous.taches.push(tache._id);
-        }));
+        }
 
         await rendezvous.save();
 
@@ -67,7 +88,6 @@ async function addRendezvous(req, res) {
         }
         // const io = req.io;
         // io.emit('rdv', { message: 'rdv has registered!' });
-
 
         const subject = 'Rappel de rendez-vous';
         const text = `<p class="reminder-text">Ceci est un rappel de votre rendez-vous prévu pour <strong>${date_heure}</strong>.</p>`;

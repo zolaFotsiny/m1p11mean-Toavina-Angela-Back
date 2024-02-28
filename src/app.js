@@ -12,6 +12,7 @@ const comisionRoutes = require('./routes/comission.routes');
 const dashRoutes = require('./routes/dash.routes');
 const paiementRoutes = require('./routes/paiement.routes');
 const clientRoutes = require('./routes/client.routes');
+const depenseRoutes = require('./routes/depense.routes');
 const cors = require('cors');
 const initializeSocket = require('./utils/socket'); // Import the socket initialization function
 
@@ -50,6 +51,7 @@ app.use('/comission', comisionRoutes);
 app.use('/dash', dashRoutes);
 app.use('/paiement', paiementRoutes);
 app.use('/client', clientRoutes);
+app.use('/depense', depenseRoutes);
 
 
 

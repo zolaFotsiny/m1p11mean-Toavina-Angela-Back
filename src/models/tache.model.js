@@ -7,6 +7,7 @@ const tacheSchema = new mongoose.Schema({
     date_debut: Date,
     date_fait: Date,
     etat: { type: Number, default: 1 },
+    remarque: String,
 
     // autres champs
 });

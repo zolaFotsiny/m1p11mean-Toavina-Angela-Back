@@ -6,11 +6,7 @@ const router = express.Router();
 const multer = require('./../utils/multerConfig');
 
 router.post('/', multer.single('file'), serviceController.create);
-router.get('/', serviceController
-
-
-
-    .findAll);
+router.get('/', serviceController.findAll);
 
 
 module.exports = router;
