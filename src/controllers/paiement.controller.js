@@ -89,9 +89,73 @@ async function validerPaiement(req, res) {
         res.status(500).json({ message: 'Erreur du serveur' });
     }
 }
+const getRevenuePerDay = async (req, res) => {
+    try {
+        await utilDB.connect();
+
+        // Get start and end dates of the current month
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+        const paiementList = await Paiement.aggregate([
+            {
+                $match: {
+                    date_paiement: {
+                        $gte: firstDayOfMonth,
+                        $lt: lastDayOfMonth
+                    },
+                    etat: 51
+                }
+            },
+            {
+                $project: {
+                    date: { $dateToString: { format: "%Y-%m-%d", date: "$date_paiement" } },
+                    montant_total: 1
+                }
+            },
+            {
+                $group: {
+                    _id: "$date",
+                    total: { $sum: "$montant_total" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    date: "$_id",
+                    total: 1
+                }
+            }
+        ]);
+
+        // Transform paiementList into the desired format
+        const labels = Array.from({ length: lastDayOfMonth.getDate() }, (_, i) => new Date(now.getFullYear(), now.getMonth(), i + 1).toISOString().split('T')[0]);
+        const data = Array(lastDayOfMonth.getDate()).fill(0);
+        for (const paiement of paiementList) {
+            const index = labels.indexOf(paiement.date);
+            if (index !== -1) {
+                data[index] = paiement.total;
+            }
+        }
+
+        res.status(200).json({
+            message: 'Paiements found',
+            labels: labels,
+            data: data,
+        });
+
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
+
 
 
 module.exports = {
     findAll,
-    validerPaiement
+    validerPaiement,
+    getRevenuePerDay
 };
