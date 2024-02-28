@@ -13,6 +13,7 @@ const dashRoutes = require('./routes/dash.routes');
 const paiementRoutes = require('./routes/paiement.routes');
 const clientRoutes = require('./routes/client.routes');
 const depenseRoutes = require('./routes/depense.routes');
+const financeRoutes = require('./routes/finance.routes');
 const cors = require('cors');
 const initializeSocket = require('./utils/socket'); // Import the socket initialization function
 
@@ -52,7 +53,7 @@ app.use('/dash', dashRoutes);
 app.use('/paiement', paiementRoutes);
 app.use('/client', clientRoutes);
 app.use('/depense', depenseRoutes);
-
+app.use('/finance', financeRoutes);
 
 
 const port = process.env.PORT || 3000;

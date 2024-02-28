@@ -4,6 +4,7 @@ const tokenUtils = require('../utils/token');
 const utilDB = require('../utils/utilDB');
 const Service = require('../models/service.model');
 const mongoose = require('mongoose');
+const employeeModel = require('../models/employee.model');
 
 async function findAll(req, res) {
     try {
@@ -18,9 +19,18 @@ async function findAll(req, res) {
             const tachesByClient = await Tache.find({ id_client });
             res.status(200).json(tachesByClient);
         } else if (userType === 'employee') {
+
             // If the user is an employee, return the tasks where the employee is involved
-            const id_employee = decodedToken.id;
-            const tachesByEmployee = await Tache.find({ id_emp: id_employee });
+            const id_utilisateur = decodedToken.id;
+            const employee = await employeeModel.findOne({ id_utilisateur: id_utilisateur });
+            console.log("employee", employee);
+            if (!employee) {
+                return res.status(404).json({ message: 'employee not found' });
+            }
+            // Now you can use client._id
+            const id_employee = employee._id;
+
+            const tachesByEmployee = await Tache.find({ id_employee: id_employee });
             res.status(200).json(tachesByEmployee);
         } else if (userType === 'manager') {
             // If the user is a manager, return all tasks

@@ -7,5 +7,5 @@ const router = express.Router();
 
 // Route pour récupérer tous les paiements d'un client spécifique
 router.get('/', paiementController.findAll); // Assurez-vous d'avoir une méthode findAll dans votre contrôleur de paiement
-
+router.put('/valider/:id', paiementController.validerPaiement);
 module.exports = router;
