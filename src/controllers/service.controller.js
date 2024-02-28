@@ -130,9 +130,44 @@ async function findAll(req, res) {
     }
 }
 
+async function deleteService(req, res) {
+    const { id } = req.params;
+    try {
+        // Vérifier le token et le rôle de l'utilisateur
+        const decodedToken = tokenUtils.decodeToken(req.headers.token);
+
+        if (decodedToken.type_utilisateur !== 'manager') {
+            return res.status(403).json({ message: 'Accès interdit. Seuls les managers peuvent supprimer un service.' });
+        }
+
+        await utilDB.connect();
+
+        // Trouver le service par ID et le supprimer
+        const service = await Service.findByIdAndDelete(id);
+
+        if (!service) {
+            return res.status(404).json({ message: 'Service non trouvé.' });
+        }
+
+        res.status(200).json({
+            message: 'Service supprimé avec succès',
+            data: service,
+            decodedToken // Ajoutez le payload décodé à la réponse si nécessaire
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erreur interne du serveur' });
+    } finally {
+        utilDB.close();
+    }
+}
+
+
+
 module.exports = {
     create,
     update,
     findById,
     findAll,
+    deleteService
 };
