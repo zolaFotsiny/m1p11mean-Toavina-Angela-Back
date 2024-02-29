@@ -9,32 +9,72 @@ const employeeModel = require('../models/employee.model');
 async function findAll(req, res) {
     try {
         await utilDB.connect();
-        // Verify the token and get the user type
         const decodedToken = tokenUtils.decodeToken(req.headers.token);
         const userType = decodedToken.type_utilisateur;
 
         if (userType === 'client') {
-            // If the user is a client, return the tasks where the client is involved
             const id_client = decodedToken.id;
-            const tachesByClient = await Tache.find({ id_client });
+            const tachesByClient = await Tache.find({ id_client })
+                .populate([
+                    {
+                        path: 'id_service',
+                        model: 'Service',
+                        select: '-image'
+                    },
+                    {
+                        path: 'id_employee',
+                        model: 'Employee',
+                        populate: {
+                            path: 'id_utilisateur',
+                            model: 'User',
+                            select: '-mot_de_passe'
+                        }
+                    }
+                ]);
             res.status(200).json(tachesByClient);
         } else if (userType === 'employee') {
-
-            // If the user is an employee, return the tasks where the employee is involved
             const id_utilisateur = decodedToken.id;
             const employee = await employeeModel.findOne({ id_utilisateur: id_utilisateur });
-            console.log("employee", employee);
             if (!employee) {
                 return res.status(404).json({ message: 'employee not found' });
             }
-            // Now you can use client._id
             const id_employee = employee._id;
-
-            const tachesByEmployee = await Tache.find({ id_employee: id_employee });
+            const tachesByEmployee = await Tache.find({ id_employee: id_employee })
+                .populate([
+                    {
+                        path: 'id_service',
+                        model: 'Service',
+                        select: '-image'
+                    },
+                    {
+                        path: 'id_employee',
+                        model: 'Employee',
+                        populate: {
+                            path: 'id_utilisateur',
+                            model: 'User',
+                            select: '-mot_de_passe'
+                        }
+                    }
+                ]);
             res.status(200).json(tachesByEmployee);
         } else if (userType === 'manager') {
-            // If the user is a manager, return all tasks
-            const allTaches = await Tache.find();
+            const allTaches = await Tache.find()
+                .populate([
+                    {
+                        path: 'id_service',
+                        model: 'Service',
+                        select: '-image'
+                    },
+                    {
+                        path: 'id_employee',
+                        model: 'Employee',
+                        populate: {
+                            path: 'id_utilisateur',
+                            model: 'User',
+                            select: '-mot_de_passe'
+                        }
+                    }
+                ]);
             res.status(200).json(allTaches);
         } else {
             res.status(403).json({ message: 'Accès interdit. Type d\'utilisateur non reconnu.' });
@@ -46,6 +86,7 @@ async function findAll(req, res) {
         res.status(500).json({ error: 'Erreur lors de la récupération des tâches' });
     }
 }
+
 
 
 
