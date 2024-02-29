@@ -79,6 +79,7 @@ async function addRendezvous(req, res) {
 
         await rendezvous.save();
 
+
         if (req.io) {
             req.io.emit('rdv', { message: 'rdv has registered!' });
             console.log('success');
@@ -86,16 +87,34 @@ async function addRendezvous(req, res) {
         else {
             console.log('err io');
         }
-        // const io = req.io;
-        // io.emit('rdv', { message: 'rdv has registered!' });
+        await Rendezvous.populate(rendezvous, {
+            path: 'taches',
+            model: 'Tache',
+            populate: [
+                {
+                    path: 'id_service',
+                    model: 'Service',
+                    select: '-image'
+                },
+                {
+                    path: 'id_employee',
+                    model: 'Employee',
+                    populate: {
+                        path: 'id_utilisateur',
+                        model: 'User',
+                        select: '-mot_de_passe'
+                    }
+                }
+            ]
+        });
+
 
         const subject = 'Rappel de rendez-vous';
         const text = `<p class="reminder-text">Ceci est un rappel de votre rendez-vous prévu pour <strong>${date_heure}</strong>.</p>`;
         const mailUtilsInstance = new MailUtils();
         await mailUtilsInstance.sendReminderEmail('zolaandriamarosoa@gmail.com', subject, text);
-
+        res.status(201).json({ message: 'Rendez-vous créé avec succès', data: rendezvous });
         utilDB.close();
-        res.status(201).json({ message: 'Rendez-vous créé avec succès' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Erreur lors de la création du rendez-vous' });
