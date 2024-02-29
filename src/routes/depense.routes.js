@@ -16,4 +16,7 @@ router.get('/:id', depenseController.findById);
 // Route pour mettre à jour une dépense
 router.put('/:id', depenseController.update);
 
+router.put('/valider/:id', depenseController.validerDepense); // Ajoutez cette ligne
+
+
 module.exports = router;
