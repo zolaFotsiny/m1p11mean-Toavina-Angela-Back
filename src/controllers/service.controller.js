@@ -5,7 +5,7 @@ const multer = require('../utils/multerConfig');
 const fs = require('fs').promises;
 
 async function create(req, res) {
-    const { designation, prix, duree, commission_pourcentage } = req.body;
+    const { designation, prix, duree, commission_pourcentage, isOffreSpeciale, dateDebut, dateFin } = req.body;
     const fileBuffer = req.file.buffer.toString('base64');
     try {
         // Vérifier le token et le rôle de l'utilisateur
@@ -29,7 +29,10 @@ async function create(req, res) {
             prix,
             duree,
             commission_pourcentage,
-            image: fileBuffer // Save the filename to the database
+            image: fileBuffer, // Save the filename to the database
+            isOffreSpeciale,
+            dateDebut,
+            dateFin
         });
 
         res.status(200).json({
@@ -115,8 +118,14 @@ async function findAll(req, res) {
     try {
         await utilDB.connect();
 
-        // Récupérer tous les services
-        const services = await Service.find({});
+        // Récupérer tous les services qui ne sont pas des offres spéciales ou dont la date de fin n'est pas expirée
+        const services = await Service.find({
+            $or: [
+                { isOffreSpeciale: false },
+                { isOffreSpeciale: true, dateFin: { $gte: new Date() } },
+                { isOffreSpeciale: true, dateFin: null }
+            ]
+        });
 
         res.status(200).json({
             message: 'Services récupérés avec succès',
@@ -129,6 +138,7 @@ async function findAll(req, res) {
         utilDB.close();
     }
 }
+
 
 async function deleteService(req, res) {
     const { id } = req.params;
